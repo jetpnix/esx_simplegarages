@@ -6,19 +6,22 @@
 Config = {}
 
 Config.Garages = {
-    ["sapcounsel"] = {
+    sapcounsel = {
         garageName = "Rode Garage",
-        getVehicle = {x = -329.87, y = -780.40, z = 33.96},
-        spawnPoint = {x = -334.44, y = -780.75, z = 33.96, h = 137.5},
+        getVehicle = vector3(-329.87, -780.40, 33.96),
+        spawnPoint = {
+            coords = vector3(-334.44, -780.75, 33.96),
+            heading = 137.50
+        },
         storeVehicle = {x = -341.72, y = -767.43, z = 33.96},
     },
-    ["court"] = {
+    court = {
         garageName = "Gerechtsgebouw",
         getVehicle = {x = 275.42, y = -345.27, z = 45.17},
         spawnPoint = {x = 273.07, y = -333.91, z = 44.92, h = 160.15},
         storeVehicle = {x = 283.61, y = -342.54, z = 44.92}
     },
-    ["canals"] = {
+    canals = {
         garageName = "Vespucci Canals",
         getVehicle = {x = -1159.14, y = -740.12, z = 19.89},
         spawnPoint = {x = -1149.21, y = -739.36, z = 20.0, h = 130.92},

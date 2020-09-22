@@ -6,7 +6,7 @@
 ESX = nil
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
-ESX.RegisterServerCallback("esx_simplegarages:server:GetUserVehicles", function(source, cb, garage)
+ESX.RegisterServerCallback("esx_simplegarages:callback:GetUserVehicles", function(source, cb, garage)
     local myCars = {}
     local sourcePlayer = ESX.GetPlayerFromId(source)
 
@@ -14,18 +14,22 @@ ESX.RegisterServerCallback("esx_simplegarages:server:GetUserVehicles", function(
         if result[1] ~= nil then
             for k, v in pairs(result) do
                 vehicle = json.decode(v.vehicle)
+                print(vehicle.model)
                 table.insert(myCars, {vehicle = vehicle, stored = v.stored, plate = v.plate})
             end
-            cb(result)
+            cb(myCars)
         else
             sourcePlayer.showNotification("You don't have any car parked in this garage...")
         end
     end)
 end)
 
-RegisterNetEvent('esx_simplegarages:server:updateCarState')
-AddEventHandler('esx-simplegarages:server:updateCarState', function(plate, fuel, engine)
-    local sourcePlayer = ESX.GetPlayerFromId(source)
-
-    MySQL.Async.execute('UPDATE owned_vehicles SET stored = @stored', {})
+RegisterNetEvent('esx_simplegarages:server:updateCarStoredState')
+AddEventHandler('esx_simplegarages:server:updateCarStoredState', function(plate, stored)
+    if stored then
+        status = 1
+    else
+        status = 0
+    end
+    MySQL.Async.execute("UPDATE owned_vehicles SET stored = @stored WHERE plate = @plate", { ['@stored'] = status, ['@plate'] = plate })
 end)
