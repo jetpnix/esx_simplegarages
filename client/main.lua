@@ -61,7 +61,7 @@ Citizen.CreateThread(function()
                     if GetDistanceBetweenCoords(playerPosition, v.storeVehicle.x, v.storeVehicle.y, v.storeVehicle.z) <= 2.5 then
                         DrawText3D(v.storeVehicle.x, v.storeVehicle.y, v.storeVehicle.z + 0.25, '~g~E~w~ - Store Vehicle')
                         if IsControlJustReleased(0, 38) then
-                            storeVehicle()
+                            storeVehicle(k)
                             currentGarage = v
                         end
                     elseif GetDistanceBetweenCoords(playerPosition, v.storeVehicle.x, v.storeVehicle.y, v.storeVehicle.z) <= 5 then
@@ -83,7 +83,7 @@ openGarageMenu = function(garage)
             local labelvehicle
             local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(v.plate, vehicleName)
             local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(v.plate, vehicleName)
-            if v.stored then
+            if v.stored == 1 then
                 labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format('In garage')
             else
                 labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format('Impound')
@@ -99,11 +99,11 @@ openGarageMenu = function(garage)
 		}, function(data, menu)
 			if data.current.value == nil then
 			else
-				if data.current.value.stored then
+				if data.current.value.stored == 1 then
                     menu.close()
 					spawnVehicle(data.current.value.vehicle, data.current.value.plate, data.current.value.fuel)
 				else
-					ESX.ShowNotification('je moeder')
+					ESX.ShowNotification("This vehicle isn't parked, its probably in the impound.")
 				end
 			end
 		end, function(data, menu)
@@ -121,20 +121,21 @@ spawnVehicle = function(vehicle, plate, fuel)
         SetVehicleEngineOn(veh, true, true)
     end)
     
-    TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, true)
+    TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, 0)
 end
 
-storeVehicle = function()
+storeVehicle = function(garage)
     local currentVehicle = GetVehiclePedIsIn(GetPlayerPed(-1), false)
     local plate = GetVehicleNumberPlateText(currentVehicle)
+    print(plate)
+    TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, 1)
     local currentFuel = exports['LegacyFuel']:GetFuel(currentVehicle)
 
-    TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, false)
     --TriggerServerEvent('esx_simplegarages:server:updateCarGarageLocation', plate, currentGarage)
     --TriggerServerEvent('esx_simplegarages:server:updateCarState', plate, currentFuel)
 
     ESX.Game.DeleteVehicle(currentVehicle)
-    ESX.ShowNotification("You're vehicle is now stored in " .. currentGarage.garageName)
+    ESX.ShowNotification("You're vehicle is now stored ")
 
 end
 

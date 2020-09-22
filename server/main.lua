@@ -26,10 +26,5 @@ end)
 
 RegisterNetEvent('esx_simplegarages:server:updateCarStoredState')
 AddEventHandler('esx_simplegarages:server:updateCarStoredState', function(plate, stored)
-    if stored then
-        status = 1
-    else
-        status = 0
-    end
-    MySQL.Async.execute("UPDATE owned_vehicles SET stored = @stored WHERE plate = @plate", { ['@stored'] = status, ['@plate'] = plate })
+    MySQL.Async.execute("UPDATE owned_vehicles SET `stored` = @stored WHERE `plate` = @plate", { ['@stored'] = stored, ['@plate'] = plate })
 end)
