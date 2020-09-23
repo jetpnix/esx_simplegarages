@@ -37,9 +37,8 @@ Citizen.CreateThread(function()
         local playerPed = GetPlayerPed(-1)
         local playerPosition = GetEntityCoords(playerPed)
 
+        -- PUBLIC GARAGES
         for k, v in pairs (Config.Garages) do 
-
-            -- STORAGE
             if GetDistanceBetweenCoords(playerPosition, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z) <= 15 then
                 DrawMarker(2, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 255, 255, 255, 222, false, false, false, true, false, false, false)
                 if GetDistanceBetweenCoords(playerPosition, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z) <= 1.5 then
@@ -70,6 +69,44 @@ Citizen.CreateThread(function()
                 end
             end
         end
+
+        -- POLICE IMPOUND
+        for k, v in pairs (Config.PoliceImpounds) do 
+            if ESX.PlayerData.job.name == 'police' then
+                if GetDistanceBetweenCoords(playerPosition, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z) <= 15 then
+                    DrawMarker(2, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 255, 255, 255, 222, false, false, false, true, false, false, false)
+                    if GetDistanceBetweenCoords(playerPosition, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z) <= 1.5 then
+                        if not IsPedInAnyVehicle(playerPed) then
+                            DrawText3D(v.getVehicle.x, v.getVehicle.y, v.getVehicle.z + 0.25, '~g~E~w~ -  Open impound')
+                            if IsControlJustReleased(0, 38) then
+                                openPoliceImpoundMenu()
+                                currentGarage = v
+                            end
+                        end
+                    elseif GetDistanceBetweenCoords(playerPosition, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z) <= 5 then
+                        DrawText3D(v.getVehicle.x, v.getVehicle.y, v.getVehicle.z + 0.25, v.garageName)
+                    end
+                end
+            end
+        end
+
+        -- PUBLIC IMPOUND
+        for k, v in pairs (Config.PublicImpounds) do 
+            if GetDistanceBetweenCoords(playerPosition, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z) <= 15 then
+                DrawMarker(2, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 255, 255, 255, 222, false, false, false, true, false, false, false)
+                if GetDistanceBetweenCoords(playerPosition, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z) <= 1.5 then
+                    if not IsPedInAnyVehicle(playerPed) then
+                        DrawText3D(v.getVehicle.x, v.getVehicle.y, v.getVehicle.z + 0.25, '~g~E~w~ -  Open depot')
+                        if IsControlJustReleased(0, 38) then
+                            openImpoundMenu()
+                            currentGarage = v
+                        end
+                    end
+                elseif GetDistanceBetweenCoords(playerPosition, v.getVehicle.x, v.getVehicle.y, v.getVehicle.z) <= 5 then
+                    DrawText3D(v.getVehicle.x, v.getVehicle.y, v.getVehicle.z + 0.25, v.garageName)
+                end
+            end
+        end
     end
 end)
 
@@ -81,12 +118,14 @@ openGarageMenu = function(garage)
             local aheadVehName = GetDisplayNameFromVehicleModel(v.vehicle.model)
             local vehicleName = GetLabelText(aheadVehName)
             local labelvehicle
-            local labelvehicle2 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> - '):format(v.plate, vehicleName)
-            local labelvehicle3 = ('| <span style="color:red;">%s</span> - <span style="color:darkgoldenrod;">%s</span> | '):format(v.plate, vehicleName)
+            local labelvehicle2 = ('%s (%s) - '):format(vehicleName, v.plate)
+            local labelvehicle3 = ('%s (%s) - '):format(vehicleName, v.plate)
             if v.stored == 1 then
-                labelvehicle = labelvehicle2 .. ('<span style="color:green;">%s</span> |'):format('In garage')
+                labelvehicle = labelvehicle2 .. ('<span style="color:#2ecc71;">%s</span>'):format('In garage')
+            elseif v.stored == 2 then
+                labelvehicle = labelvehicle2 .. ('<span style="color:#c0392b;">%s</span>'):format('Impounded')
             else
-                labelvehicle = labelvehicle2 .. ('<span style="color:red;">%s</span> |'):format('Impound')
+                labelvehicle = labelvehicle2 .. ('<span style="color:#e67e22;">%s</span>'):format('Car depot')
             end
 
             table.insert(elements, {label = labelvehicle, value = v})
@@ -94,14 +133,14 @@ openGarageMenu = function(garage)
 
         ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_car', {
 			title = garage,
-			align = right,
+			align = left,
 			elements = elements
 		}, function(data, menu)
 			if data.current.value == nil then
 			else
 				if data.current.value.stored == 1 then
                     menu.close()
-					spawnVehicle(data.current.value.vehicle, data.current.value.plate, data.current.value.fuel)
+					spawnVehicle(data.current.value.vehicle, data.current.value.fuel, data.current.value.engine, data.current.value.plate)
 				else
 					ESX.ShowNotification("This vehicle isn't parked, its probably in the impound.")
 				end
@@ -112,11 +151,73 @@ openGarageMenu = function(garage)
     end, garage)
 end
 
-spawnVehicle = function(vehicle, plate, fuel)
+openPoliceImpoundMenu = function()
+    local elements = {}
+
+    ESX.TriggerServerCallback("esx_simplegarages:callback:GetPoliceImpoundedVehicles", function(PoliceImpoundCars)
+        for k, v in pairs(PoliceImpoundCars) do
+            local aheadVehName = GetDisplayNameFromVehicleModel(v.vehicle.model)
+            local vehicleName = GetLabelText(aheadVehName)
+            local labelvehicle
+            local labelvehicle = ('%s (%s)'):format(vehicleName, v.plate)
+
+            table.insert(elements, {label = labelvehicle, value = v})
+        end
+
+        ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_car', {
+			title = garage,
+			align = left,
+			elements = elements
+		}, function(data, menu)
+            menu.close()
+			spawnVehicle(data.current.value.vehicle, data.current.value.fuel, data.current.value.engine, data.current.value.plate)
+		end, function(data, menu)
+			menu.close()
+		end)
+    end)
+end
+
+openImpoundMenu = function()
+    local elements = {}
+
+    ESX.TriggerServerCallback("esx_simplegarages:callback:GetImpoundedVehicles", function(ImpoundedVehicles)
+        for k, v in pairs(ImpoundedVehicles) do
+            local aheadVehName = GetDisplayNameFromVehicleModel(v.vehicle.model)
+            local vehicleName = GetLabelText(aheadVehName)
+            local labelvehicle
+            local labelvehicle = ('%s (%s) - <span style="color:#27ae60">$%s</span>'):format(vehicleName, v.plate, v.price)
+
+            table.insert(elements, {label = labelvehicle, value = v})
+        end
+
+        ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_car', {
+			title = garage,
+			align = left,
+			elements = elements
+		}, function(data, menu)
+            menu.close()
+            ESX.TriggerServerCallback("esx_simplegarages:callback:GetPlayerCashAmount", function(amount)
+                if amount >= data.current.value.price then
+                    TriggerServerEvent("esx_simplegarages:server:PayImpoundBill", data.current.value.price)
+                    spawnVehicle(data.current.value.vehicle, data.current.value.fuel, data.current.value.engine, data.current.value.plate)
+                else
+                    menu.close()
+                    ESX.ShowNotification("You don't have enough cash money to pay the bill...")
+                end
+            end)
+		end, function(data, menu)
+			menu.close()
+		end)
+    end)
+end
+
+spawnVehicle = function(vehicle, fuel, enginehealth, plate)
     ESX.Game.SpawnVehicle(vehicle.model, currentGarage.spawnPoint.coords, currentGarage.spawnPoint.heading, function(veh)
 		ESX.Game.SetVehicleProperties(veh, vehicle)
         SetEntityAsMissionEntity(veh, true, true)
         TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
+
+        SetVehicleEngineHealth(veh, enginehealth + 0.0)
         exports['LegacyFuel']:SetFuel(veh, fuel)
         SetVehicleEngineOn(veh, true, true)
     end)
@@ -124,20 +225,37 @@ spawnVehicle = function(vehicle, plate, fuel)
     TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, 0)
 end
 
-storeVehicle = function(garage)
-    local currentVehicle = GetVehiclePedIsIn(GetPlayerPed(-1), false)
+storeVehicle = function(cgarage)
+    local currentVehicle = GetVehiclePedIsIn(PlayerPedId())
     local plate = GetVehicleNumberPlateText(currentVehicle)
-    print(plate)
-    TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, 1)
     local currentFuel = exports['LegacyFuel']:GetFuel(currentVehicle)
-
-    --TriggerServerEvent('esx_simplegarages:server:updateCarGarageLocation', plate, currentGarage)
-    --TriggerServerEvent('esx_simplegarages:server:updateCarState', plate, currentFuel)
+    local engineHealth = GetVehicleEngineHealth(currentVehicle)
 
     ESX.Game.DeleteVehicle(currentVehicle)
+    TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, 1)
+    TriggerServerEvent('esx_simplegarages:server:updateCarGarageLocation', plate, cgarage)
+    TriggerServerEvent('esx_simplegarages:server:updateCarState', plate, currentFuel, engineHealth)
     ESX.ShowNotification("You're vehicle is now stored ")
 
 end
+
+RegisterNetEvent('esx_simplegarages:client:takeVehicleToPoliceImpound')
+AddEventHandler('esx_simplegarages:client:takeVehicleToPoliceImpound', function()
+    local currentVehicle = GetVehiclePedIsIn(PlayerPedId())
+    local plate = GetVehicleNumberPlateText(currentVehicle)
+
+    ESX.Game.DeleteVehicle(currentVehicle)
+    TriggerServerEvent('esx_simplegarages:server:takeVehicleToPoliceImpound', plate)
+end)
+
+RegisterNetEvent('esx_simplegarages:client:takeVehicleToImpound')
+AddEventHandler('esx_simplegarages:client:takeVehicleToImpound', function(price)
+    local currentVehicle = GetVehiclePedIsIn(PlayerPedId())
+    local plate = GetVehicleNumberPlateText(currentVehicle)
+
+    ESX.Game.DeleteVehicle(currentVehicle)
+    TriggerServerEvent('esx_simplegarages:server:takeVehicleToImpound', plate, price)
+end)
 
 DrawText3D = function(x, y, z, text)
 	SetTextScale(0.35, 0.35)
@@ -170,14 +288,28 @@ Citizen.CreateThread(function()
         EndTextCommandSetBlipName(Garage)
     end
 
-    for k, v in pairs(Config.Impounds) do
+    for k, v in pairs(Config.PoliceImpounds) do
         Depot = AddBlipForCoord(v.getVehicle.x, v.getVehicle.y, v.getVehicle.z)
 
-        SetBlipSprite (Depot, 68)
+        SetBlipSprite (Depot, 357)
         SetBlipDisplay(Depot, 4)
         SetBlipScale  (Depot, 0.7)
         SetBlipAsShortRange(Depot, true)
-        SetBlipColour(Depot, 5)
+        SetBlipColour(Depot, 1)
+
+        BeginTextCommandSetBlipName("STRING")
+        AddTextComponentSubstringPlayerName(v.garageName)
+        EndTextCommandSetBlipName(Depot)
+    end
+
+    for k, v in pairs(Config.PublicImpounds) do
+        Depot = AddBlipForCoord(v.getVehicle.x, v.getVehicle.y, v.getVehicle.z)
+
+        SetBlipSprite (Depot, 357)
+        SetBlipDisplay(Depot, 4)
+        SetBlipScale  (Depot, 0.7)
+        SetBlipAsShortRange(Depot, true)
+        SetBlipColour(Depot, 1)
 
         BeginTextCommandSetBlipName("STRING")
         AddTextComponentSubstringPlayerName(v.garageName)
