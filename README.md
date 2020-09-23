@@ -1,6 +1,7 @@
 # ESX SIMPLEGARAGES - ADVANCED BUT SIMPLE GARAGE SYSTEM FOR LEGACY ESX1.2
 Author: Dividerz -> https://forum.cfx.re/u/dividerz/summary
-Discord for support: Arne#7777
+
+Support: https://discord.gg/WxZ83u3 - New Discord Server for support
 
 **DEPENDENCIES**
 
