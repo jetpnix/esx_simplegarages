@@ -13,6 +13,16 @@ ESX.RegisterServerCallback("esx_simplegarages:callback:GetPlayerCashAmount", fun
     cb(amount)
 end)
 
+ESX.RegisterServerCallback("esx_simplegarages:callback:CheckIfPlateExists", function(source, cb, plate)
+    MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE `plate` = @plate', {['@plate'] = plate}, function(result)
+        if result[1] ~= nil then
+            cb(true)
+        else
+            cb(false)
+        end
+    end)
+end)
+
 ESX.RegisterServerCallback("esx_simplegarages:callback:GetUserVehicles", function(source, cb, garage)
     local myCars = {}
     local sourcePlayer = ESX.GetPlayerFromId(source)

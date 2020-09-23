@@ -226,17 +226,22 @@ spawnVehicle = function(vehicle, fuel, enginehealth, plate)
 end
 
 storeVehicle = function(cgarage)
-    local currentVehicle = GetVehiclePedIsIn(PlayerPedId())
-    local plate = GetVehicleNumberPlateText(currentVehicle)
-    local currentFuel = exports['LegacyFuel']:GetFuel(currentVehicle)
-    local engineHealth = GetVehicleEngineHealth(currentVehicle)
+    ESX.TriggerServerCallback("esx_simplegarages:callback:CheckIfPlateExists", function(cb)
+        if cb then
+            local currentVehicle = GetVehiclePedIsIn(PlayerPedId())
+            local plate = GetVehicleNumberPlateText(currentVehicle)
+            local currentFuel = exports['LegacyFuel']:GetFuel(currentVehicle)
+            local engineHealth = GetVehicleEngineHealth(currentVehicle)
 
-    ESX.Game.DeleteVehicle(currentVehicle)
-    TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, 1)
-    TriggerServerEvent('esx_simplegarages:server:updateCarGarageLocation', plate, cgarage)
-    TriggerServerEvent('esx_simplegarages:server:updateCarState', plate, currentFuel, engineHealth)
-    ESX.ShowNotification("You're vehicle is now stored ")
-
+            ESX.Game.DeleteVehicle(currentVehicle)
+            TriggerServerEvent('esx_simplegarages:server:updateCarStoredState', plate, 1)
+            TriggerServerEvent('esx_simplegarages:server:updateCarGarageLocation', plate, cgarage)
+            TriggerServerEvent('esx_simplegarages:server:updateCarState', plate, currentFuel, engineHealth)
+            ESX.ShowNotification("You're vehicle is now stored ")
+        else
+            ESX.ShowNotification("This vehicle isn't owned by anyone...")
+        end
+    end, plate)
 end
 
 RegisterNetEvent('esx_simplegarages:client:takeVehicleToPoliceImpound')
