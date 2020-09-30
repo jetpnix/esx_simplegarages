@@ -26,8 +26,9 @@ end)
 ESX.RegisterServerCallback("esx_simplegarages:callback:GetUserVehicles", function(source, cb, garage)
     local myCars = {}
     local sourcePlayer = ESX.GetPlayerFromId(source)
+    local identifier = sourcePlayer.getIdentifier()
 
-    MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE `owner` = @owner AND `garage` = @garage AND `type` = @type', {['@owner'] = sourcePlayer.identifier, ['@garage'] = garage, ['@type'] = 'car'}, function(result)
+    MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE `owner` = @owner AND `garage` = @garage AND `type` = @type', {['@owner'] = identifier, ['@garage'] = garage, ['@type'] = 'car'}, function(result)
         if result[1] ~= nil then
             for k, v in pairs(result) do
                 vehicle = json.decode(v.vehicle)
@@ -59,7 +60,9 @@ end)
 ESX.RegisterServerCallback("esx_simplegarages:callback:GetImpoundedVehicles", function(source, cb)
     local ImpoundedVehicles = {}
     local sourcePlayer = ESX.GetPlayerFromId(source)
-    MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE `owner` = @owner AND `stored` = 0 AND `type` = @type', {['@owner'] = sourcePlayer.identifier, ['@type'] = 'car'}, function(result)
+    local identifier = sourcePlayer.getIdentifier()
+
+    MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE `owner` = @owner AND `stored` = 0 AND `type` = @type', {['@owner'] = identifier, ['@type'] = 'car'}, function(result)
         if result[1] ~= nil then
             for k, v in pairs(result) do
                 vehicle = json.decode(v.vehicle)
