@@ -6,6 +6,7 @@
 ESX = nil
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
+ESX.RegisterServerCallback("esx_simplegarages:callback:GetPlayerCashAmount", function(source, cb)
     local sourcePlayer = ESX.GetPlayerFromId(source)
     local amount = sourcePlayer.getMoney()
 
