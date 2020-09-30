@@ -191,11 +191,23 @@ openImpoundMenu = function()
         end
 
         ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'spawn_owned_car', {
-			title = garage,
+			title = 'Garage',
 			align = left,
 			elements = elements
 		}, function(data, menu)
             menu.close()
+			-- Check if the plate exists in the spanwed cars. This to avoid infinite spawn. 
+			local gameVehicles = ESX.Game.GetVehicles()
+			for i = 1, #gameVehicles do
+				local vehicle = gameVehicles[i]
+				if DoesEntityExist(vehicle) then
+					if Config.Trim(GetVehicleNumberPlateText(vehicle)) == Config.Trim(data.current.value.plate) then
+                        ESX.ShowNotification("A vehicle with this plate is on streets already.")
+					return
+					end
+				end
+			end
+			
             ESX.TriggerServerCallback("esx_simplegarages:callback:GetPlayerCashAmount", function(amount)
                 if amount >= data.current.value.price then
                     TriggerServerEvent("esx_simplegarages:server:PayImpoundBill", data.current.value.price)
