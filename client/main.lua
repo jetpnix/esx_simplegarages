@@ -120,7 +120,7 @@ openGarageMenu = function(garage)
             local labelvehicle
             local labelvehicle2 = ('%s (%s) - '):format(vehicleName, v.plate)
             local labelvehicle3 = ('%s (%s) - '):format(vehicleName, v.plate)
-            if v.stored == 1 then
+            if v.stored == true then
                 labelvehicle = labelvehicle2 .. ('<span style="color:#2ecc71;">%s</span>'):format('In garage')
             elseif v.stored == 2 then
                 labelvehicle = labelvehicle2 .. ('<span style="color:#c0392b;">%s</span>'):format('Impounded')
@@ -138,7 +138,7 @@ openGarageMenu = function(garage)
 		}, function(data, menu)
 			if data.current.value == nil then
 			else
-				if data.current.value.stored == 1 then
+				if data.current.value.stored == true then
                     menu.close()
 					spawnVehicle(data.current.value.vehicle, data.current.value.fuel, data.current.value.engine, data.current.value.plate)
 				else
